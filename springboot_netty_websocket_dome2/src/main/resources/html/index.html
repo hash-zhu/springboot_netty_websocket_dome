@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title></title>
+</head>
+<body>
+
+<div>
+    <span>userId: <input type="text" id="userId" value="1"/></span>&nbsp;&nbsp;
+    <span>targetId: <input type="text" id="targetId" value="2"/></span>
+</div>
+<hr>
+<div><span>message content: <input type="text" id="msgContent" value="你好，我是1号"/></span>&nbsp;&nbsp;<input type="button" value="发送" onclick="CHAT.chat()"/></div>
+<hr>
+
+
+<div>接受消息:</div>
+<div id="receiveMsg" style="background-color: gainsboro;"></div>
+
+<script type="application/javascript">
+    window.CHAT = {
+        socket: null,
+        init: function () {
+            if (window.WebSocket) {
+                CHAT.socket = new WebSocket("ws://127.0.0.1:9099/ws");
+                CHAT.socket.onopen = function () {
+                    console.log("连接建立成功");
+                    var object = {};
+                    object.action = 1;
+                    object.fromUserId = document.getElementById("userId").value;
+                    var string =JSON.stringify(object);
+                    console.log("send msg: "+ string);
+                    CHAT.socket.send(string);
+                },
+                    CHAT.socket.onclose = function () {
+                        console.log("连接关闭");
+                    },
+                    CHAT.socket.onerror = function () {
+                        console.log("发生错误");
+                    },
+                    CHAT.socket.onmessage = function (e) {
+                        console.log("接收到消息" + e.data);
+                        var receiveMsg = document.getElementById("receiveMsg");
+                        var html = receiveMsg.innerHTML;
+                        receiveMsg.innerHTML = html + "<br/>" + e.data;
+                    }
+            } else {
+                alert("浏览器不支持WebSocket协议...");
+            }
+        },
+        chat: function () {
+            var msg = document.getElementById("msgContent");
+            var userId = document.getElementById("userId");
+            var targetId = document.getElementById("targetId");
+            var object = {content:msg.value};
+            object.action = 2;
+            object.fromUserId = userId.value;
+            object.toUserId = targetId.value;
+            var string =JSON.stringify(object);
+            console.log("send msg: "+ string);
+            CHAT.socket.send(string);
+        }
+    }
+    CHAT.init();
+</script>
+</body>
+</html>

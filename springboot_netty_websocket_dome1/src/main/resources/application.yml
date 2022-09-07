@@ -1,0 +1,3 @@
+nettyServer:
+  port: 8088
+
